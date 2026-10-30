@@ -1,0 +1,118 @@
+[
+ {
+  "id": "r001",
+  "title": "Bryndzové halušky",
+  "category": "Hlavné jedlá",
+  "ingredients": [
+   "700 g zemiaky",
+   "400 g (podľa potreby) polohrubá múka",
+   "2 vajcia",
+   "2 ČL soľ",
+   "375 g bryndza",
+   "400 g slanina"
+  ],
+  "steps": [
+   "Postrúhať zemiaky (čo najdrobnejšie), pridať soľ, vajcia a múku podľa potreby. Strapačky pretlačiť cez kovové cedítko do vriacej vody a nechať variť, kým vyplávajú. Potom ich prepláchnuť studenou vodou, poliať masťou zo slaniny a dať do misky na bryndzu."
+  ],
+  "notes": "",
+  "favorite": false,
+  "imagePath": null
+ },
+ {
+  "id": "r012",
+  "title": "Rascová polievka",
+  "category": "Polievky",
+  "ingredients": [
+   "2 ½ l voda",
+   "1 PL celá rasca",
+   "1 PL vegeta",
+   "3-4 stredné zemiaky",
+   "korenie",
+   "olej, múka, cibuľa a mletá paprika na zápražku"
+  ],
+  "steps": [
+   "Uvariť zemiaky s rascou, vegetou a korením. Pridať zápražku a variť ešte 15-20 minút. Po uvarení precediť."
+  ],
+  "notes": "",
+  "favorite": false,
+  "imagePath": null
+ },
+ {
+  "id": "r017",
+  "title": "Langoše",
+  "category": "Múčne jedlá a iné",
+  "ingredients": [
+   "500 g hladká múka",
+   "0,2 l mlieko",
+   "1 vajce",
+   "125 g kyslá smotana",
+   "2 ČL soľ",
+   "½ droždie",
+   "1 PL cukor"
+  ],
+  "steps": [
+   "Vypracovať cesto, nechať nakysnúť a odložiť na noc do chladničky. Na pomúčenej doske narobiť bochníčky a vytvarovať z nich placky a opiecť ich v horúcom oleji."
+  ],
+  "notes": "",
+  "favorite": false,
+  "imagePath": null
+ },
+ {
+  "id": "r006-01",
+  "title": "Worchestrová marináda",
+  "category": "Marinády a omáčky",
+  "ingredients": [
+   "2PL kečup",
+   "2PL horčica",
+   "1PL worchester",
+   "2PL mletá paprika",
+   "2PL olej",
+   "1 cibuľa"
+  ],
+  "steps": [],
+  "notes": "",
+  "favorite": false,
+  "imagePath": null
+ },
+ {
+  "id": "r066",
+  "title": "Tvarohové rezy s orechmi",
+  "category": "Koláče a dezerty",
+  "ingredients": [
+   "Cesto: Krém:",
+   "200 g poloh. múka 3 tvarohy",
+   "200 g orechy 200 g cukor",
+   "150 g cukor 2 vanilínové cukry",
+   "150 g maslo 100 g maslo",
+   "1 vajce 4 žĺtky",
+   "½ PDP 2 PL poloh. múka",
+   "2-3 PL smotany (podľa hustoty",
+   "tvarohu)"
+  ],
+  "steps": [
+   "Zmiesiť cesto, rukou natlačiť na plech a natrieť tvarohovým krémom. Piecť na 180°C asi 30 minút. Potom natrieť sneh vyšľahaný s 100 g cukru a posypať nasekanými orechmi. Piecť ešte 10 minút."
+  ],
+  "notes": "",
+  "favorite": false,
+  "imagePath": null
+ },
+ {
+  "id": "r074",
+  "title": "Pagáče syrové",
+  "category": "Pečivo",
+  "ingredients": [
+   "350 g hladká múka",
+   "250 g strúhaný údený syr",
+   "200 g maslo",
+   "2 žĺtky",
+   "1 ČL soľ",
+   "½ PDP",
+   "½ šľahačka",
+   "vajce na potretie"
+  ],
+  "steps": [],
+  "notes": "",
+  "favorite": false,
+  "imagePath": null
+ }
+]

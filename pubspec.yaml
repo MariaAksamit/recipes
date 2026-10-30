@@ -1,0 +1,31 @@
+name: recepty
+description: Moje recepty – osobná kuchárka pre mobil aj počítač.
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.9.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  image: ^4.3.0 # zmenšenie fotiek pri pridaní (len Windows / Android)
+  path_provider: ^2.1.4
+  file_picker: ^10.0.0
+  share_plus: '>=11.0.0 <14.0.0'
+  url_launcher: ^6.3.0
+  archive: ^4.0.0
+  web: ^1.1.1 # len pre webovú verziu (úložisko v prehliadači)
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/recipes.json
+    - assets/brand/

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+  <!--
+    $FLUTTER_BASE_HREF nahradí hodnota z `flutter build web --base-href /cesta/`.
+    Ak je apka v koreni webu (napr. Netlify), netreba nič meniť.
+  -->
+  <base href="$FLUTTER_BASE_HREF">
+
+  <meta charset="UTF-8">
+  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <meta name="description" content="Moje recepty – osobná kuchárka.">
+  <meta name="theme-color" content="#FFB061">
+
+  <!-- iPhone: po „Pridať na plochu“ sa apka otvorí bez lišty Safari -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Recepty">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+
+  <link rel="icon" type="image/png" href="favicon.png"/>
+
+  <title>Moje recepty</title>
+  <link rel="manifest" href="manifest.json">
+</head>
+<body>
+  <script>
+    // Offline režim: apka sa uloží do telefónu a spustí sa aj bez internetu.
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js').catch(function (e) {
+        console.warn('Offline režim sa nepodarilo zapnúť:', e);
+      });
+    }
+    // Požiada prehliadač, aby recepty v telefóne sám nemazal.
+    if (navigator.storage && navigator.storage.persist) {
+      navigator.storage.persist().catch(function () {});
+    }
+  </script>
+  <script src="flutter_bootstrap.js" async></script>
+</body>
+</html>
