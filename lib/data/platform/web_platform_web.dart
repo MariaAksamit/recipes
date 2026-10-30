@@ -11,11 +11,26 @@ const _storeName = 'kv';
 
 /// Jednoduché úložisko kľúč → hodnota v prehliadači (IndexedDB).
 /// Zmestia sa sem aj fotky (na rozdiel od localStorage).
+///
+/// Safari zatvára spojenie s IndexedDB, keď stránka odíde na pozadie – čo sa
+/// stane napríklad pri výbere súboru zo Súborov. Po návrate potom každá
+/// transakcia skončí chybou „the database connection is closing“. Preto si
+/// spojenie nedržíme natvrdo: keď sa zatvorí, otvorí sa znova a operácia
+/// zopakuje.
 class WebDb {
-  final web.IDBDatabase _db;
-  WebDb._(this._db);
+  web.IDBDatabase? _db;
+
+  WebDb._();
 
   static Future<WebDb> open() async {
+    final db = WebDb._();
+    await db._connection(); // overí, že prehliadač úložisko vôbec dovolí
+    return db;
+  }
+
+  Future<web.IDBDatabase> _connection() async {
+    final current = _db;
+    if (current != null) return current;
     final req = web.window.indexedDB.open(_dbName, 1);
     req.onupgradeneeded = ((web.Event _) {
       final db = req.result as web.IDBDatabase;
@@ -24,13 +39,32 @@ class WebDb {
       }
     }).toJS;
     final db = await _request(req) as web.IDBDatabase;
-    return WebDb._(db);
+    // Keď prehliadač spojenie zavrie, nabudúce si otvoríme nové.
+    db.addEventListener('close', ((web.Event _) { _db = null; }).toJS);
+    _db = db;
+    return db;
   }
 
-  Future<JSAny?> _get(String key) {
-    final tx = _db.transaction(_storeName.toJS, 'readonly');
-    return _request(tx.objectStore(_storeName).get(key.toJS));
+  /// Spustí operáciu; pri zatvorenom spojení ho otvorí znova a skúsi raz ešte.
+  Future<T> _run<T>(Future<T> Function(web.IDBDatabase db) op) async {
+    try {
+      return await op(await _connection());
+    } catch (e) {
+      if (!_connectionClosed(e)) rethrow;
+      _db = null;
+      return await op(await _connection());
+    }
   }
+
+  static bool _connectionClosed(Object e) {
+    final m = e.toString().toLowerCase();
+    return m.contains('invalidstateerror') || m.contains('connection is closing');
+  }
+
+  Future<JSAny?> _get(String key) => _run((db) async {
+    final tx = db.transaction(_storeName.toJS, 'readonly');
+    return _request(tx.objectStore(_storeName).get(key.toJS));
+  });
 
   Future<String?> getText(String key) async {
     final r = await _get(key);
@@ -44,12 +78,12 @@ class WebDb {
     return (r as JSUint8Array).toDart;
   }
 
-  Future<List<String>> keys() async {
-    final tx = _db.transaction(_storeName.toJS, 'readonly');
+  Future<List<String>> keys() => _run((db) async {
+    final tx = db.transaction(_storeName.toJS, 'readonly');
     final r = await _request(tx.objectStore(_storeName).getAllKeys());
-    if (r.isUndefinedOrNull) return [];
+    if (r.isUndefinedOrNull) return <String>[];
     return (r as JSArray<JSString>).toDart.map((k) => k.toDart).toList();
-  }
+  });
 
   Future<void> putText(String key, String value) =>
       _write((s) => s.put(value.toJS, key.toJS));
@@ -60,9 +94,9 @@ class WebDb {
   Future<void> delete(String key) => _write((s) => s.delete(key.toJS));
 
   /// Zápis je hotový, až keď prehliadač potvrdí celú transakciu.
-  Future<void> _write(void Function(web.IDBObjectStore store) op) {
+  Future<void> _write(void Function(web.IDBObjectStore store) op) => _run((db) {
     final c = Completer<void>();
-    final tx = _db.transaction(_storeName.toJS, 'readwrite');
+    final tx = db.transaction(_storeName.toJS, 'readwrite');
     tx.oncomplete = ((web.Event _) {
       if (!c.isCompleted) c.complete();
     }).toJS;
@@ -74,7 +108,7 @@ class WebDb {
     }).toJS;
     op(tx.objectStore(_storeName));
     return c.future;
-  }
+  });
 }
 
 Future<JSAny?> _request(web.IDBRequest req) {

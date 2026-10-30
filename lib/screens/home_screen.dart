@@ -18,7 +18,6 @@ import '../widgets/category_pane.dart';
 import '../widgets/import_recipe_dialog.dart';
 import '../widgets/recipe_list_pane.dart';
 import '../widgets/theemis_mark.dart';
-import '../widgets/web_sync_card.dart';
 import 'recipe_detail_screen.dart';
 import 'recipe_edit_screen.dart';
 
@@ -550,7 +549,6 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     final categoryPane = CategoryPane(
-      header: kIsWeb ? WebSyncCard(lastBackup: store.lastBackupDate, onImport: _import) : null,
       categories: categories,
       counts: counts,
       total: all.length,
@@ -607,7 +605,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         floatingActionButton: FloatingActionButton.extended(
           onPressed: () => _chooseNewRecipe(wide),
-          icon: const Icon(Icons.add),
+          icon: Icon(Icons.add, size: kIsWeb ? 18 : null),
           label: Text(s.newRecipe),
         ),
         body: wide

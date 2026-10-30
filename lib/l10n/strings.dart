@@ -77,9 +77,6 @@ abstract class S {
   String get wordFileName;
 
   // web (iPhone)
-  String get webSyncFirst;
-  String webSyncLast(DateTime d);
-  String get update;
 
   // ---------------------------------------------------------------- detail
   String get addFavorite;
@@ -304,15 +301,6 @@ class SSk extends S {
   @override
   String get wordFileName => 'moje_recepty';
 
-  @override
-  String get webSyncFirst =>
-      'Recepty si môžeš preniesť z iného zariadenia: tam ulož zálohu (⋮ → Uložiť zálohu) '
-      'a tu ju načítaj. Recepty z tohto zariadenia sa nevymažú – len sa doplnia a aktualizujú.';
-  @override
-  String webSyncLast(DateTime d) =>
-      'Naposledy načítaná záloha: ${date(d)}. Nová záloha recepty doplní a aktualizuje, nič nevymaže.';
-  @override
-  String get update => 'Aktualizovať';
 
   @override
   String get addFavorite => 'Pridať do obľúbených';
@@ -646,15 +634,6 @@ class SEn extends S {
   @override
   String get wordFileName => 'my_recipes';
 
-  @override
-  String get webSyncFirst =>
-      'You can bring recipes over from another device: save a backup there (⋮ → Save backup) '
-      'and load it here. Recipes on this device are kept – they are only added to and updated.';
-  @override
-  String webSyncLast(DateTime d) =>
-      'Last backup loaded: ${date(d)}. A new backup adds and updates recipes, it never deletes any.';
-  @override
-  String get update => 'Update';
 
   @override
   String get addFavorite => 'Add to favourites';

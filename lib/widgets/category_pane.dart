@@ -5,7 +5,6 @@ import '../models/categories.dart';
 
 /// Zvislý zoznam kategórií (Obľúbené, Všetky, jednotlivé kategórie).
 class CategoryPane extends StatelessWidget {
-  final Widget? header;
   final List<String> categories;
   final Map<String, int> counts;
   final int total;
@@ -19,7 +18,6 @@ class CategoryPane extends StatelessWidget {
 
   const CategoryPane({
     super.key,
-    this.header,
     required this.categories,
     required this.counts,
     required this.total,
@@ -39,7 +37,6 @@ class CategoryPane extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.fromLTRB(8, 8, 8, 24),
       children: [
-        ?header,
         Padding(
           padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
           child: Text(

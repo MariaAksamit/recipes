@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
@@ -49,12 +50,18 @@ class RecipesApp extends StatelessWidget {
       useMaterial3: true,
       colorScheme: scheme,
       scaffoldBackgroundColor: scheme.surface,
-      floatingActionButtonTheme: dark
-          ? const FloatingActionButtonThemeData(
-              backgroundColor: Color(0xFFFFB061), // 5 – tlačidlo Nový recept
-              foregroundColor: Color(0xFF000000),
-            )
-          : null,
+      // Vo webovej verzii je tlačidlo „Nový recept“ o tretinu nižšie
+      // (48 → 32), na dotykovom displeji inak zaberá priveľa miesta.
+      floatingActionButtonTheme: FloatingActionButtonThemeData(
+        backgroundColor: dark ? const Color(0xFFFFB061) : null, // 5 – tlačidlo Nový recept
+        foregroundColor: dark ? const Color(0xFF000000) : null,
+        extendedSizeConstraints:
+            kIsWeb ? const BoxConstraints.tightFor(height: 32) : null,
+        extendedPadding: kIsWeb ? const EdgeInsets.symmetric(horizontal: 14) : null,
+        extendedIconLabelSpacing: kIsWeb ? 6 : null,
+        extendedTextStyle:
+            kIsWeb ? const TextStyle(fontSize: 13, fontWeight: FontWeight.w500) : null,
+      ),
       cardTheme: CardThemeData(
         elevation: 0,
         clipBehavior: Clip.antiAlias,
