@@ -1,0 +1,69 @@
+# Po každom pushi do main postaví webovú verziu a nasadí ju na GitHub Pages.
+# Apka potom beží na https://MariaAksamit.github.io/recipes/
+#
+# Podmienka: v repozitári musí byť Settings → Pages → Source nastavené
+# na „GitHub Actions“ (nie na vetvu).
+
+name: Nasadiť webovú verziu na Pages
+
+on:
+  push:
+    branches: [main]
+  # Umožní spustiť nasadenie aj ručne z karty Actions.
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Naraz nech beží len jedno nasadenie; rozbehnuté sa nepreruší.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Stiahnuť kód
+        uses: actions/checkout@v6
+
+      - name: Zistiť adresu Pages
+        id: pages
+        uses: actions/configure-pages@v5
+
+      - name: Nainštalovať Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Stiahnuť závislosti
+        run: flutter pub get
+
+      # Keď testy spadnú, nasadenie sa nespustí a na Pages zostane
+      # predchádzajúca funkčná verzia.
+      - name: Spustiť testy
+        run: flutter test
+
+      # base-href musí sedieť s cestou, na ktorej stránka beží. Pri repozitári
+      # „recipes“ z toho vyjde /recipes/; po premenovaní sa prispôsobí samo.
+      - name: Postaviť webovú verziu
+        run: flutter build web --release --base-href "${{ steps.pages.outputs.base_path }}/"
+
+      - name: Odovzdať výsledok
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: build/web
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Nasadiť na Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
