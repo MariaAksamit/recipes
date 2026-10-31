@@ -47,7 +47,7 @@ class TheemisMarkAnimated extends StatefulWidget {
     super.key,
     this.width = 240,
     this.color,
-    this.duration = const Duration(milliseconds: 2000),
+    this.duration = const Duration(milliseconds: 950),
     this.repeat = true,
   });
 

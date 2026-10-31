@@ -2,6 +2,7 @@
 
 import 'dart:async';
 import 'dart:js_interop';
+import 'dart:js_interop_unsafe';
 import 'dart:typed_data';
 
 import 'package:web/web.dart' as web;
@@ -120,6 +121,91 @@ Future<JSAny?> _request(web.IDBRequest req) {
     if (!c.isCompleted) c.completeError(StateError(req.error?.message ?? 'Chyba úložiska'));
   }).toJS;
   return c.future;
+}
+
+/// Požiada prehliadač, nech úložisko nemaže sám od seba.
+///
+/// Safari inak zmaže dáta stránky, ktorú si 7 dní neotvorila. Apka pridaná
+/// na plochu („Pridať na plochu“) tomu nepodlieha a trvalé úložisko dostane
+/// skôr. Vráti true, keď prehliadač trvalé úložisko povolil.
+Future<bool> requestPersistentStorage() async {
+  try {
+    final navigator = globalContext.getProperty<JSObject>('navigator'.toJS);
+    if (!navigator.hasProperty('storage'.toJS).toDart) return false;
+    final storage = navigator.getProperty<JSObject>('storage'.toJS);
+    if (!storage.hasProperty('persist'.toJS).toDart) return false;
+    final granted = await storage.callMethod<JSPromise<JSBoolean>>('persist'.toJS).toDart;
+    return granted.toDart;
+  } catch (_) {
+    // Prehliadač to nevie alebo nepovolí – apka beží ďalej, len bez záruky.
+    return false;
+  }
+}
+
+// --------------------------------------------------------------- ukladanie
+
+/// Zrušený dialóg („Uložiť ako“ aj zdieľanie) hlási AbortError – to nie je
+/// chyba, len sa nemá skúšať ďalší spôsob.
+bool _cancelled(Object e) {
+  final t = e.toString().toLowerCase();
+  return t.contains('abort');
+}
+
+/// Opýta sa, kam súbor uložiť. Vráti false, keď to používateľ zrušil.
+///
+/// 1. Počítačový prehliadač (Chrome, Edge) → dialóg „Uložiť ako“ s výberom
+///    priečinka.
+/// 2. iPhone a Android → systémové zdieľanie, kde je „Uložiť do Súborov“
+///    a vyberieš si priečinok (alebo zálohu rovno pošleš inam).
+/// 3. Keď prehliadač nevie ani jedno (staršie Safari) → bežné stiahnutie
+///    medzi Stiahnuté súbory.
+Future<bool> saveFileTo(String fileName, Uint8List bytes, String mimeType) async {
+  final blob = web.Blob(<JSAny>[bytes.toJS].toJS, web.BlobPropertyBag(type: mimeType));
+
+  if (globalContext.hasProperty('showSaveFilePicker'.toJS).toDart) {
+    try {
+      final ext = fileName.contains('.') ? '.${fileName.split('.').last}' : '';
+      final accept = JSObject()..setProperty(mimeType.toJS, <JSAny>[ext.toJS].toJS);
+      final type = JSObject()
+        ..setProperty('description'.toJS, fileName.toJS)
+        ..setProperty('accept'.toJS, accept);
+      final options = JSObject()
+        ..setProperty('suggestedName'.toJS, fileName.toJS)
+        ..setProperty('types'.toJS, <JSAny>[type].toJS);
+      final handle = await globalContext
+          .callMethod<JSPromise<JSObject>>('showSaveFilePicker'.toJS, options)
+          .toDart;
+      final writer =
+          await handle.callMethod<JSPromise<JSObject>>('createWritable'.toJS).toDart;
+      await writer.callMethod<JSPromise>('write'.toJS, blob).toDart;
+      await writer.callMethod<JSPromise>('close'.toJS).toDart;
+      return true;
+    } catch (e) {
+      if (_cancelled(e)) return false;
+      // Inde (napr. v ráme stránky) to prehliadač nepovolí – skúsime ďalej.
+    }
+  }
+
+  final navigator = globalContext.getProperty<JSObject>('navigator'.toJS);
+  if (navigator.hasProperty('canShare'.toJS).toDart) {
+    try {
+      final file = web.File(
+        <JSAny>[bytes.toJS].toJS,
+        fileName,
+        web.FilePropertyBag(type: mimeType),
+      );
+      final data = JSObject()..setProperty('files'.toJS, <JSAny>[file].toJS);
+      if (navigator.callMethod<JSBoolean>('canShare'.toJS, data).toDart) {
+        await navigator.callMethod<JSPromise>('share'.toJS, data).toDart;
+        return true;
+      }
+    } catch (e) {
+      if (_cancelled(e)) return false;
+    }
+  }
+
+  downloadFile(fileName, bytes, mimeType);
+  return true;
 }
 
 /// Uloží súbor do zariadenia – prehliadač ho stiahne medzi Stiahnuté súbory

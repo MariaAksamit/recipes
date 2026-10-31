@@ -1,6 +1,9 @@
 import 'dart:typed_data';
 
-/// Náhrada pre Windows / Android / iOS – tieto triedy sa tam nepoužívajú.
+import 'package:wakelock_plus/wakelock_plus.dart';
+
+/// Verzia pre Windows, Android a iOS. Úložisko prehliadača tu neexistuje –
+/// recepty sú v súboroch (pozri RecipeStore) – takže WebDb sa tu nepoužíva.
 class WebDb {
   static Future<WebDb> open() => throw UnsupportedError('WebDb je len pre web');
 
@@ -15,9 +18,32 @@ class WebDb {
 void downloadFile(String fileName, Uint8List bytes, String mimeType) =>
     throw UnsupportedError('downloadFile je len pre web');
 
+Future<bool> saveFileTo(String fileName, Uint8List bytes, String mimeType) =>
+    throw UnsupportedError('saveFileTo je len pre web');
+
+/// Na Windows / Androide súbory nikto nemaže – netreba nič pýtať.
+Future<bool> requestPersistentStorage() async => true;
+
 Future<Uint8List> fetchBytes(String url) => throw UnsupportedError('fetchBytes je len pre web');
 
+/// „Displej nezhasína“ počas varenia. Vo webovej verzii to rieši
+/// web_platform_web.dart sám, tu to zariadi wakelock_plus.
 class ScreenWakeLock {
-  static Future<bool> enable() async => false;
-  static Future<void> disable() async {}
+  static Future<bool> enable() async {
+    try {
+      await WakelockPlus.enable();
+      return await WakelockPlus.enabled;
+    } catch (_) {
+      // Keď to systém nedovolí, varenie beží ďalej, len displej zhasne.
+      return false;
+    }
+  }
+
+  static Future<void> disable() async {
+    try {
+      await WakelockPlus.disable();
+    } catch (_) {
+      // Nič – zámok sa uvoľní najneskôr pri zatvorení apky.
+    }
+  }
 }

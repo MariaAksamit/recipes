@@ -60,12 +60,16 @@ abstract class S {
   String get exportWord;
   String get saveBackup;
   String get loadBackup;
-  String get loadBackupTooltip;
+  String get backupReplace;
+  String get backupReplaceSubtitle;
+  String get backupMerge;
+  String get backupMergeSubtitle;
   String get saveBackupDialog;
   String get pickBackupDialog;
   String get backupSaved;
   String backupSaveFailed(Object e);
   String recipesLoaded(int n);
+  String recipesReplaced(int n);
   String fileLoadFailed(Object e);
   String get searchResults;
   String onlyShown(String label);
@@ -271,7 +275,15 @@ class SSk extends S {
   @override
   String get loadBackup => 'Načítať zálohu';
   @override
-  String get loadBackupTooltip => 'Načítať recepty zo zálohy';
+  String get backupReplace => 'Nahradiť všetko';
+  @override
+  String get backupReplaceSubtitle =>
+      'V zariadení budú presne tie recepty, čo sú v zálohe – vymazané zmiznú.';
+  @override
+  String get backupMerge => 'Doplniť';
+  @override
+  String get backupMergeSubtitle =>
+      'Novšie verzie sa prepíšu, nové recepty pridajú. Nič sa nevymaže.';
   @override
   String get saveBackupDialog => 'Uložiť zálohu receptov';
   @override
@@ -282,6 +294,8 @@ class SSk extends S {
   String backupSaveFailed(Object e) => 'Zálohu sa nepodarilo uložiť: $e';
   @override
   String recipesLoaded(int n) => 'Načítané recepty: $n';
+  @override
+  String recipesReplaced(int n) => 'Recepty nahradené zo zálohy: $n';
   @override
   String fileLoadFailed(Object e) => 'Súbor sa nepodarilo načítať: $e';
   @override
@@ -604,7 +618,15 @@ class SEn extends S {
   @override
   String get loadBackup => 'Load backup';
   @override
-  String get loadBackupTooltip => 'Load recipes from a backup';
+  String get backupReplace => 'Replace everything';
+  @override
+  String get backupReplaceSubtitle =>
+      'This device will hold exactly what is in the backup – deleted recipes go.';
+  @override
+  String get backupMerge => 'Add to what is here';
+  @override
+  String get backupMergeSubtitle =>
+      'Newer versions overwrite, new recipes are added. Nothing is deleted.';
   @override
   String get saveBackupDialog => 'Save recipe backup';
   @override
@@ -615,6 +637,8 @@ class SEn extends S {
   String backupSaveFailed(Object e) => 'Could not save the backup: $e';
   @override
   String recipesLoaded(int n) => 'Recipes loaded: $n';
+  @override
+  String recipesReplaced(int n) => 'Recipes replaced from the backup: $n';
   @override
   String fileLoadFailed(Object e) => 'Could not load the file: $e';
   @override

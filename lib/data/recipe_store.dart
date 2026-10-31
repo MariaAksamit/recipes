@@ -151,6 +151,9 @@ class RecipeStore extends ChangeNotifier {
 
   Future<void> _openWeb() async {
     try {
+      // Nech prehliadač recepty nezmaže sám od seba (pozri
+      // requestPersistentStorage). Keď nepovolí, apka beží ďalej.
+      await requestPersistentStorage();
       final db = await WebDb.open();
       // Čítajú sa len názvy – bajty sa načítajú, až keď fotku treba vykresliť.
       for (final k in await db.keys()) {

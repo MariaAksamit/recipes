@@ -26,10 +26,10 @@ const kWideLayout = 900.0;
 
 /// Ako dlho zostane úvodné logo na obrazovke aj keď sú recepty načítané skôr.
 /// Nastav na Duration.zero, ak nechceš žiadne zdržanie.
-const kSplashMinDuration = Duration(milliseconds: 1400);
+const kSplashMinDuration = Duration(milliseconds: 650);
 
 /// Verzia vypísaná v dialógu „O aplikácii“ (drž ju zhodnú s pubspec.yaml).
-const kAppVersion = '1.0.0';
+const kAppVersion = '1.1.0';
 
 /// Text na vyhľadávanie (bez diakritiky) – počíta sa raz pre každý recept.
 final _searchText = Expando<String>('searchText');
@@ -184,11 +184,10 @@ class _HomeScreenState extends State<HomeScreen> {
     required Uint8List bytes,
     String? extension,
   }) async {
-    // V prehliadači (webová apka) dialóg „Uložiť ako“ nie je – súbor sa stiahne
-    // medzi Stiahnuté súbory, na iPhone sa ponúkne „Uložiť do Súborov“.
+    // Vo webovej verzii si miesto vyberieš cez „Uložiť ako“ (Chrome, Edge)
+    // alebo cez systémové zdieľanie – „Uložiť do Súborov“ (iPhone, Android).
     if (kIsWeb) {
-      downloadFile(fileName, bytes, _mimeType(extension ?? fileName.split('.').last));
-      return true;
+      return saveFileTo(fileName, bytes, _mimeType(extension ?? fileName.split('.').last));
     }
     final path = await FilePicker.platform.saveFile(
       dialogTitle: dialogTitle,
@@ -341,14 +340,44 @@ class _HomeScreenState extends State<HomeScreen> {
       final file = res?.files.single;
       if (file == null) return;
       final bytes = file.bytes ?? await File(file.path!).readAsBytes();
-      // Recepty s rovnakým ID sa prepíšu novšou verziou, nové sa pridajú –
-      // rovnako na počítači aj v mobile, takže sa nič nestratí.
-      final n = await store.importBackup(bytes);
-      _snack(s.recipesLoaded(n));
+      if (!mounted) return;
+      // Doplniť nikdy nič nemaže, preto by vymazaný recept zo zálohy ostal
+      // v zariadení. Nech je jasné, ktorý z tých dvoch spôsobov to bude.
+      final replace = await _askBackupMode(s);
+      if (replace == null || !mounted) return;
+      final n = await store.importBackup(bytes, replace: replace);
+      _snack(replace ? s.recipesReplaced(n) : s.recipesLoaded(n));
     } catch (e) {
       _snack(s.fileLoadFailed(e));
     }
   }
+
+  /// Nahradiť všetko (presná kópia zálohy) alebo len doplniť?
+  /// null = zrušené.
+  Future<bool?> _askBackupMode(S s) => showDialog<bool>(
+    context: context,
+    builder: (ctx) => SimpleDialog(
+      title: Text(s.loadBackup),
+      children: [
+        SimpleDialogOption(
+          onPressed: () => Navigator.pop(ctx, true),
+          child: ListTile(
+            leading: const Icon(Icons.sync),
+            title: Text(s.backupReplace),
+            subtitle: Text(s.backupReplaceSubtitle),
+          ),
+        ),
+        SimpleDialogOption(
+          onPressed: () => Navigator.pop(ctx, false),
+          child: ListTile(
+            leading: const Icon(Icons.playlist_add),
+            title: Text(s.backupMerge),
+            subtitle: Text(s.backupMergeSubtitle),
+          ),
+        ),
+      ],
+    ),
+  );
 
   Future<void> _chooseLanguage() async {
     final store = StoreScope.read(context);
@@ -593,15 +622,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ? BackButton(onPressed: () => setState(() => _mobileShowRecipes = false))
               : null,
           title: Text(showingRecipesOnMobile ? _filterTitle(s) : s.appTitle),
-          actions: [
-            if (kIsWeb)
-              IconButton(
-                tooltip: s.loadBackupTooltip,
-                icon: const Icon(Icons.sync),
-                onPressed: _import,
-              ),
-            _menu(s),
-          ],
+          actions: [_menu(s)],
         ),
         floatingActionButton: FloatingActionButton.extended(
           onPressed: () => _chooseNewRecipe(wide),

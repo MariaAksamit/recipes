@@ -36,7 +36,7 @@ class _RecipeDetailViewState extends State<RecipeDetailView> {
   static const _factors = [0.5, 1.0, 1.5, 2.0, 3.0];
   double _factor = 1.0;
   final Set<int> _checked = {}; // odškrtnuté suroviny
-  bool _cooking = false; // web: režim varenia (displej nezhasína, väčšie písmo)
+  bool _cooking = false; // režim varenia (displej nezhasína, väčšie písmo)
 
   Future<void> _toggleCooking() async {
     final on = !_cooking;
@@ -118,14 +118,13 @@ class _RecipeDetailViewState extends State<RecipeDetailView> {
               color: r.favorite ? scheme.primary : null,
               onPressed: () => store.toggleFavorite(r),
             ),
-            if (kIsWeb)
-              IconButton(
-                tooltip: _cooking ? s.cookingModeOff : s.cookingMode,
-                icon: Icon(_cooking ? Icons.soup_kitchen : Icons.soup_kitchen_outlined),
-                color: _cooking ? scheme.primary : null,
-                isSelected: _cooking,
-                onPressed: _toggleCooking,
-              ),
+            IconButton(
+              tooltip: _cooking ? s.cookingModeOff : s.cookingMode,
+              icon: Icon(_cooking ? Icons.soup_kitchen : Icons.soup_kitchen_outlined),
+              color: _cooking ? scheme.primary : null,
+              isSelected: _cooking,
+              onPressed: _toggleCooking,
+            ),
             Builder(
               builder: (btnCtx) => IconButton(
                 tooltip: s.share,

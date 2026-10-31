@@ -50,3 +50,11 @@ app.*.map.json
 # Zdrojová grafika loga (Affinity, SVG, pracovné náhľady) – do apky netreba,
 # tá má logo v lib/widgets/theemis_logo_paths.dart a assets/brand/.
 /Design/
+
+# Balíky pre vydanie – prikladajú sa k Release, do repozitára nepatria
+*.zip
+
+# Podpisovací kľúč pre Android – do repozitára nikdy nepatrí
+/android/key.properties
+*.jks
+*.keystore

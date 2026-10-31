@@ -1,0 +1,85 @@
+# Postaví podpísané Android APK a priloží ho k vydaniu (Release).
+#
+# Spustí sa po pushnutí značky v* (napr. `git tag v1.0.1 && git push --tags`),
+# alebo ručne z karty Actions – vtedy sa APK dá stiahnuť zo zhrnutia behu.
+#
+# Podmienka: v repozitári musia byť v Settings → Secrets and variables →
+# Actions štyri tajomstvá (ako sa vyrábajú, je v README):
+#   ANDROID_KEYSTORE_BASE64    – súbor .jks zakódovaný do base64
+#   ANDROID_KEYSTORE_PASSWORD  – heslo k úložisku kľúčov
+#   ANDROID_KEY_ALIAS          – názov kľúča (alias)
+#   ANDROID_KEY_PASSWORD       – heslo ku kľúču
+
+name: Postaviť Android APK
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+# Potrebné na priloženie APK k vydaniu.
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Stiahnuť kód
+        uses: actions/checkout@v6
+
+      - name: Nainštalovať Javu
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Nainštalovať Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Stiahnuť závislosti
+        run: flutter pub get
+
+      # Keď testy spadnú, APK sa nepostaví a k vydaniu sa nič nepriloží.
+      - name: Spustiť testy
+        run: flutter test
+
+      - name: Pripraviť podpisovací kľúč
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: |
+          if [ -z "$KEYSTORE_BASE64" ]; then
+            echo "Chýba tajomstvo ANDROID_KEYSTORE_BASE64 – APK by sa podpísalo" >&2
+            echo "debug kľúčom a nedalo by sa ním aktualizovať vydaná apka." >&2
+            exit 1
+          fi
+          echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/recepty.jks"
+
+      - name: Postaviť APK
+        env:
+          ANDROID_KEYSTORE_PATH: ${{ runner.temp }}/recepty.jks
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: flutter build apk --release
+
+      - name: Pomenovať podľa verzie
+        run: |
+          mv build/app/outputs/flutter-apk/app-release.apk \
+             "moje-recepty-${{ github.ref_name }}.apk"
+
+      # Pri ručnom spustení sa APK dá stiahnuť priamo zo zhrnutia behu.
+      - name: Odložiť APK k behu
+        uses: actions/upload-artifact@v4
+        with:
+          name: moje-recepty-apk
+          path: moje-recepty-*.apk
+
+      - name: Priložiť APK k vydaniu
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: moje-recepty-*.apk
